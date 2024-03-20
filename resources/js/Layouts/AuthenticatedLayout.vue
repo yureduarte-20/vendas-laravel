@@ -14,11 +14,15 @@ const flash = computed(() => usePage().props.flash)
 
 <template>
     <div>
-        <Alert v-if="flash && flash.notification"
-               :type="flash.notification.type"
-               :message="flash.notification.message"
-               :title="''"
-        />
+        <div class="fixed bottom-[5%] max-w-xl z-10 right-[5%]">
+        <Alert v-if="flash.notification"
+               :type="flash.notification?.type ?? 'info'"
+               :message="flash.notification?.message"
+               @click="flash.notification = null"
+        :title="flash.notification?.title ?? ''"/>
+        </div>
+
+
         <div class="min-h-screen bg-gray-100">
             <nav class="bg-white border-b border-gray-100">
                 <!-- Primary Navigation Menu -->
@@ -39,6 +43,13 @@ const flash = computed(() => usePage().props.flash)
                                 <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
                                     Dashboard
                                 </NavLink>
+                                <NavLink :href="route('produtos.index')" :active="route().current('produtos.index')">
+                                    Produtos
+                                </NavLink>
+                                <NavLink :href="route('clientes.index')" :active="route().current('clientes.index')">
+                                    Clientes
+                                </NavLink>
+
                             </div>
                         </div>
 
@@ -71,7 +82,7 @@ const flash = computed(() => usePage().props.flash)
                                     </template>
 
                                     <template #content>
-                                        <DropdownLink :href="route('profile.edit')"> Profile </DropdownLink>
+                                        <DropdownLink :href="route('profile.edit')"> Profile</DropdownLink>
                                         <DropdownLink :href="route('logout')" method="post" as="button">
                                             Log Out
                                         </DropdownLink>
@@ -134,7 +145,7 @@ const flash = computed(() => usePage().props.flash)
                         </div>
 
                         <div class="mt-3 space-y-1">
-                            <ResponsiveNavLink :href="route('profile.edit')"> Profile </ResponsiveNavLink>
+                            <ResponsiveNavLink :href="route('profile.edit')"> Profile</ResponsiveNavLink>
                             <ResponsiveNavLink :href="route('logout')" method="post" as="button">
                                 Log Out
                             </ResponsiveNavLink>
@@ -146,14 +157,16 @@ const flash = computed(() => usePage().props.flash)
             <!-- Page Heading -->
             <header class="bg-white shadow" v-if="$slots.header">
                 <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                    <slot name="header" />
+                    <slot name="header"/>
                 </div>
             </header>
 
             <!-- Page Content -->
             <main>
-                <slot />
+                <slot/>
             </main>
         </div>
+
     </div>
+
 </template>

@@ -39,14 +39,15 @@ class ProdutoController extends Controller
     {
         $validated = $request->validate($this->rules);
         $_produto = Produto::findOrFail($produto);
-        $_produto->fill($validated)->save();
+        $_produto->fill($validated)->saveOrFail();
+        session()->flash('notification', [ 'type' => 'success', 'message'=> 'Atualizado com sucesso!' ]);
         return Redirect::to(route('produtos.index'));
     }
     public function destroy(string $produto)
     {
         $_produto = Produto::findOrFail($produto);
         $_produto->delete();
-        session()->flash('notification', [ 'type' => 'sucess', 'message'=> 'Deletado com sucesso!' ]);
+        session()->flash('notification', [ 'type' => 'success', 'message'=> 'Deletado com sucesso!' ]);
         return Redirect::to(route('produtos.index'));
     }
 

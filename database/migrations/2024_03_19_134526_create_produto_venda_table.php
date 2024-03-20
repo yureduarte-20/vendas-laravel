@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedInteger('quantidade')->default(1);
             $table->unsignedDecimal('valor_unitario')->default(0.1);
 
-            $table->foreignIdFor(\App\Models\Produto::class)->constrained()->nullOnDelete();
+            $table->foreignIdFor(\App\Models\Produto::class)->nullable()->constrained()->nullOnDelete();
             $table->foreignIdFor(\App\Models\Venda::class)->constrained()->cascadeOnDelete();
             $table->timestamps();
         });

@@ -6,13 +6,17 @@ import TextInput from "@/Components/TextInput.vue";
 import InputLabel from "@/Components/InputLabel.vue";
 import InputError from "@/Components/InputError.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
-
+const props = defineProps({
+    id: Number,
+    cpf:String,
+    nome: String
+})
 const form = useForm({
-    cpf: '',
-    nome: ''
+    cpf: props.cpf,
+    nome: props.nome
 })
 const submit = () =>{
-    form.post(route('clientes.store'), {
+    form.put(route('clientes.update', { 'cliente': props.id }), {
         onError: console.log
     })
 }
@@ -21,17 +25,17 @@ const submit = () =>{
 </script>
 
 <template>
-    <Head title="Cadastrar Cliente"/>
+    <Head title="Editar Cliente"/>
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Cadastrar Cliente</h2>
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Editar Cliente</h2>
         </template>
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="px-4 py-2">
+                    <div class="px-2 py-4">
                         <div class="mb-4 font-medium text-md">
-                            Preencha os dados corretamente
+                            Tela de cadastro de clientes
                         </div>
                         <form @submit.prevent="submit" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="w-full">
@@ -50,7 +54,7 @@ const submit = () =>{
                             </div>
                             <div></div>
                             <div class="flex justify-end">
-                                <PrimaryButton>Cadastrar</PrimaryButton>
+                                <PrimaryButton>Salvar</PrimaryButton>
                             </div>
                         </form>
                     </div>

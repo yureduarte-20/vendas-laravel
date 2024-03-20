@@ -43,8 +43,10 @@ Route::middleware('auth')->group(function () {
         Route::put('/clientes/{cliente}', 'update')->name('clientes.update');
         Route::delete('/clientes/{cliente}', 'destroy')->name('clientes.destroy');
     });
-
+    Route::get('/clientes/find', [\App\Http\Controllers\SearchController::class, 'find_cliente'])->name('clientes.find');
+    Route::get('/produtos/find', [\App\Http\Controllers\SearchController::class, 'find_produtos'])->name('produtos.find');
     Route::resource('produtos', \App\Http\Controllers\ProdutoController::class)->except(['show']);
+    Route::resource('vendas', \App\Http\Controllers\VendaController::class)->except(['show']);
 
 });
 

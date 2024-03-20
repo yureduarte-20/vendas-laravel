@@ -6,7 +6,6 @@ import TextInput from "@/Components/TextInput.vue";
 import InputLabel from "@/Components/InputLabel.vue";
 import InputError from "@/Components/InputError.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
-import {f} from "../../../../public/build/assets/app-C5kg9Pp-.js";
 
 const form = useForm({
     preco_base: '',

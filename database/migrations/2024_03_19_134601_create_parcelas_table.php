@@ -19,7 +19,7 @@ return new class extends Migration
             $table->text('observacoes')->nullable();
 
             $table->foreignIdFor(\App\Models\FormaPagamento::class)->constrained();
-            $table->foreignIdFor(\App\Models\Venda::class)->constrained();
+            $table->foreignIdFor(\App\Models\Venda::class)->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
     }
