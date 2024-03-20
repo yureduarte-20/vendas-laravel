@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('parcelas', function (Blueprint $table) {
             $table->id();
-            $table->unsignedDecimal('valor');
+            $table->unsignedFloat('valor');
             $table->date('vencimento');
             $table->date('data_pagamento')->nullable();
             $table->text('observacoes')->nullable();

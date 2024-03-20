@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('produto_venda', function (Blueprint $table) {
             $table->id();
             $table->unsignedInteger('quantidade')->default(1);
-            $table->unsignedDecimal('valor_unitario')->default(0.1);
+            $table->unsignedFloat('valor_unitario')->default(0.1);
 
-            $table->foreignIdFor(\App\Models\Produto::class)->nullable()->constrained()->nullOnDelete();
+            $table->foreignIdFor(\App\Models\Produto::class)->nullable()->nullOnDelete();
             $table->foreignIdFor(\App\Models\Venda::class)->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('venda_items');
+        Schema::dropIfExists('produto_venda');
     }
 };

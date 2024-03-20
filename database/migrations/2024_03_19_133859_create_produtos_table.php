@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('nome');
 
-            $table->unsignedDecimal('preco_base')->default(0.01);
+            $table->unsignedFloat('preco_base')->default(0.01);
             $table->text('descricao')->nullable();
             $table->timestamps();
         });

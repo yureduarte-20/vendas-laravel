@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\FormaPagamento;
+use App\Models\Produto;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -20,7 +21,8 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
         $this->call([
-            FormaPagamento::class => FormaPagamentoSeed::class
+            FormaPagamento::class => FormaPagamentoSeed::class,
+            Produto::class => ProdutosSeed::class
         ]);
     }
 }

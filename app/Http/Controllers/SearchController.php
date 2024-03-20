@@ -18,7 +18,7 @@ class SearchController extends Controller
             $not_search = explode(',', $not_search);
         return Cliente::when($search, fn(Builder $query) => $query->where('nome', 'LIKE', '%' . $search . '%')
             ->orWhere('cpf', 'LIKE', '%' . $search . '%'))
-            ->when($not_search, fn(Builder $query) => $query->whereNotIn('id', $not_search))
+            ->when($not_search, fn($query) => $query->whereNotIn('id', $not_search))
             ->get();
     }
 
@@ -29,7 +29,7 @@ class SearchController extends Controller
         if($not_search)
             $not_search = explode(',', $not_search);
         return Produto::when($search , fn(Builder $query) => $query->where('nome', 'LIKE', '%'.$search.'%'))
-            ->when($not_search, fn(Builder $query) => $query->whereNotIn('id', $not_search))
+            ->when($not_search, fn($query) => $query->whereNotIn('id', $not_search))
             ->get();
     }
 }

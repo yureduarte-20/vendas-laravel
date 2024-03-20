@@ -3,7 +3,8 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import {router, useForm} from "@inertiajs/vue3";
 import {Link} from '@inertiajs/vue3';
 import PrimaryButton from "@/Components/PrimaryButton.vue";
-import {computed} from "vue";
+import Divider from 'primevue/divider';
+
 
 const props = defineProps({
     produtos: Object

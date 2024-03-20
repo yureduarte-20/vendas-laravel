@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  */
 class ProdutoVenda extends Pivot
 {
-
+    protected $table = 'produto_venda';
     use HasFactory;
 
     protected $fillable = [

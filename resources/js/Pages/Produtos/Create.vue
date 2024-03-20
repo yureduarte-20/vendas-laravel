@@ -6,12 +6,14 @@ import TextInput from "@/Components/TextInput.vue";
 import InputLabel from "@/Components/InputLabel.vue";
 import InputError from "@/Components/InputError.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
+import {defineComponent} from "vue";
 
 const form = useForm({
     preco_base: '',
     nome: '',
     descricao: null
 })
+
 const submit = () =>{
     form.post(route('produtos.store'), {
         onError: console.log
@@ -38,6 +40,7 @@ const submit = () =>{
                             <div class="w-full">
                                 <InputLabel value="Nome do produto"/>
                                 <TextInput type="text"
+                                           required
                                        v-model="form.nome"
                                        min="11"
                                        max="11"
@@ -46,7 +49,7 @@ const submit = () =>{
                             </div>
                             <div class="w-full">
                                 <InputLabel value="Preço Base"/>
-                                <TextInput class="w-full " type="number" v-model="form.preco_base"/>
+                                <TextInput required class="w-full " type="number" v-model="form.preco_base"/>
                                 <InputError v-if="form.errors.preco_base" :message="form.errors.preco_base"/>
                             </div>
                             <div style="grid-column: span 2;">
