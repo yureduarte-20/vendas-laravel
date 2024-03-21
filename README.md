@@ -18,6 +18,11 @@
  npm install
 # Buildar projeto do vue3
  npm run build
+ 
+# rodar migration
+php artisan migrate
+# rodar seeds
+php artisan db:seed
  ```
 ## About Laravel
 
