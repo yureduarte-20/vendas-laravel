@@ -18,7 +18,9 @@
         "vue": "^3.4.0"
     },
     "dependencies": {
+        "date-fns": "^3.6.0",
         "maska": "^2.1.11",
-        "primevue": "^3.50.0"
+        "primevue": "^3.50.0",
+        "puppeteer": "^22.6.0"
     }
 }

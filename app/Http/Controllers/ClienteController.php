@@ -19,12 +19,10 @@ class ClienteController extends Controller
     ];
     public function index()
     {
-        $query_cliente = \Illuminate\Support\Facades\Request::query('cliente');
-        $query_user = \Illuminate\Support\Facades\Request::query('user');
-        $clientes = Cliente::when($query_cliente, function (Builder $query) use ($query_cliente) {
-            $query->where('id', $query_cliente);
+        $search = \Illuminate\Support\Facades\Request::query('search');
+        $clientes = Cliente::when($search, function (Builder $query) use ($search) {
+            $query->where('nome', 'LIKE',$search.'%');
         })
-            ->when($query_user, fn(Builder $query) => $query->whereHas('vendas', fn(Builder $query) => $query->where('user_id', $query_user)))
             ->withCount(['vendas'])
             ->paginate(15)
             ->withQueryString();

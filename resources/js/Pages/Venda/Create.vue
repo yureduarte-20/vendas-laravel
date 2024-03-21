@@ -4,16 +4,16 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import {Head, useForm} from "@inertiajs/vue3";
 import TextInput from "@/Components/TextInput.vue";
 import InputLabel from "@/Components/InputLabel.vue";
-import InputError from "@/Components/InputError.vue";
+
 import 'primevue/resources/themes/lara-light-green/theme.css';
 import Dropdown from 'primevue/dropdown';
-import Divider from 'primevue/divider';
-import TabView from 'primevue/tabview/TabView.vue';
-import TabPanel from 'primevue/tabpanel/TabPanel.vue';
+
 import PrimaryButton from "@/Components/PrimaryButton.vue";
-import {defineComponent, nextTick, reactive, ref, watch} from "vue";
-import Lara from '@/preset/lara.js'
+import {computed, nextTick, reactive, ref, toRef, watch, watchEffect} from "vue";
+
 import Modal from "@/Components/Modal.vue";
+import {addMonths} from "date-fns";
+import InputError from "@/Components/InputError.vue";
 
 const props = defineProps({
     forma_pagamento: Array,
@@ -25,11 +25,24 @@ const form = useForm({
     produtos: []
 })
 const submit = () => {
-    form.transform(d => ({
-        ...d,
-        cliente_id: d.cliente.id,
-        cliente: undefined
-    }))
+    form
+        .transform(d => ({
+            cliente: d.cliente.id,
+            produtos: d.produtos.map(item => ({
+                item: item.id,
+                valor: item.preco_base,
+                qtde: item.qtde,
+            })),
+            parcelas: d.parcelas.map(item => ({
+                valor: item.valor,
+                meio_pagamento: item.meio_pagamento?.id ??
+                    item.meio_pagamento,
+                vencimento: item.vencimento
+            })),
+            total: d.total
+        }))
+        .post(route('vendas.store'))
+
 }
 const clientesOptions = ref([]);
 const produtosOptions = ref([]);
@@ -37,44 +50,35 @@ const showModal = ref(false)
 const currentProduto = ref(null);
 const searchProdutosProcessing = ref(false);
 const searchClientesProcessing = ref(false);
-const qtdeParcelas = ref(1)
-const parcelas = ref([])
+
 const removeProduto = id => {
     form.produtos = form.produtos.filter(item => item.id !== id)
 }
-watch(qtdeParcelas, (qtde, old) => {
-    if (qtde == old) return
-    const valor_por_parcela = form.total / qtde
-    const _parcelas = new Array(qtde).fill(Object.assign({}, {
-        valor: valor_por_parcela,
-        meio_pagamento: 0
-    })).map(item => ({...item, id: Math.floor(1000 * Math.random())}))
-    parcelas.value = _parcelas
-})
-watch(form, (newV, old) => {
-    if (form.produtos.length > 1)
-        form.total = form.produtos.reduce((curr, nex) => (curr.qtde * curr.preco_base) + (curr.qtde * nex.preco_base))
-    else if (form.produtos.length == 1)
-        form.total = form.produtos[0].preco_base * (form.produtos[0].qtde ?? 1)
-})
-watch(parcelas, (newV, old) => {
-    if (newV.length > 1) {
-        let sum = 0;
-
-        const lastIndex = newV.length - 1
-
-        for (let i = 0; i < lastIndex - 1; i++) {
-            sum += newV[i].valor;
-        }
-        if (sum - newV[lastIndex].valor <= 0) {
-            alert('As parcelas não podem ter valor zero')
-            parcelas.value = old
-            return
-        }
-        const ultima = Object.assign({}, {valor: sum - newV[lastIndex].valor, ...newV[lastIndex]})
-        newV[lastIndex] = ultima;
+const removerParcela = index => {
+    form.parcelas = form.parcelas.filter((item, _index) => _index != index)
+}
+const valor_restante = computed(() => {
+    let diff= 0;
+    if (form.parcelas.length > 1) {
+        const res = form.parcelas.reduce((p, c) => c.valor + p, 0)
+        diff = Number.isNaN(res) ? 0 : parseFloat((res).toFixed(2))
+    } else if (form.parcelas.length == 1) {
+        const res = form.parcelas[0].valor
+        diff = Number.isNaN(res) ? 0 : parseFloat((res).toFixed(2))
     }
+    return parseFloat((form.total - diff).toFixed(2))
+
 })
+const parcela = reactive({vencimento: new Date(), valor: 0, meio_pagamento: {id: 0}})
+const appendParcela = () => {
+
+    if (parcela.valor > form.total) return alert('Valor da parcela não pode ser maior que o valor de compra')
+    if (parcela.valor > valor_restante.value) return alert('Valor da parcela não pode ser maior que o valor restante')
+    form.parcelas.push({...parcela});
+    parcela.valor = 0;
+    parcela.vencimento = 0;
+    parcela.meio_pagamento = {id: 0};
+}
 const searchProdutosText = text => {
     searchProdutosProcessing.value = true;
     axios.get(route('produtos.find', {
@@ -94,7 +98,6 @@ const searchClientes = text => {
         .finally(() => searchClientesProcessing.value = false)
 }
 const beforeDropdownProductsHide = () => {
-
     nextTick(() => {
         if (currentProduto.value && typeof currentProduto.value === 'object' && !form.produtos.some(item => item.id === currentProduto.value.id)) {
             currentProduto.value.qtde = 1
@@ -102,13 +105,23 @@ const beforeDropdownProductsHide = () => {
             currentProduto.value = null
             nextTick(() => {
                 if (form.produtos.length > 1)
-                    form.total = form.produtos.reduce((curr, nex) => (curr.qtde * curr.preco_base) + (curr.qtde * nex.preco_base))
-                else
+                    form.total = form.produtos.reduce((curr, nex) => (curr.qtde * curr.preco_base) + (nex.qtde * nex.preco_base))
+                else if (form.produtos.length == 1)
                     form.total = form.produtos[0].preco_base * (form.produtos[0].qtde ?? 1)
             })
         }
     })
 }
+watch(form.produtos, (newV, old) => {
+    let sum = 0;
+    for (let i = 0; i < newV.length; i++) {
+        sum += newV[i].preco_base * (newV[i].qtde ?? 1)
+    }
+    form.total = sum
+})
+watch(form.parcelas, (nwev, old) => {
+
+})
 </script>
 
 <template>
@@ -120,7 +133,7 @@ const beforeDropdownProductsHide = () => {
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="px-4 py-2">
+                    <form class="px-4 py-2">
                         <div class="mb-4 font-medium text-xl">
                             Preencha os dados corretamente
                         </div>
@@ -128,15 +141,19 @@ const beforeDropdownProductsHide = () => {
                             <div class="w-full mb-6">
                                 <h2 class="font-medium text-lg">Cliente</h2>
                                 <div class="flex flex-col md:flex-row gap-2">
-                                    <Dropdown editable
-                                              :loading="searchClientesProcessing"
-                                              class="w-1/2 rounded border"
-                                              selection-message="selecione"
-                                              empty-message="Sem clientes"
-                                              @input="searchClientes"
-                                              v-model="form.cliente"
-                                              option-label="nome"
-                                              :options="clientesOptions"/>
+                                    <div class="w-1/2">
+                                        <Dropdown editable
+                                                  :loading="searchClientesProcessing"
+                                                  class=" w-full rounded border"
+                                                  selection-message="selecione"
+                                                  empty-message="Sem clientes"
+                                                  @input="searchClientes"
+                                                  v-model="form.cliente"
+                                                  required
+                                                  option-label="nome"
+                                                  :options="clientesOptions"/>
+                                        <InputError :message="form.errors.cliente"/>
+                                    </div>
                                     <div v-if="form.cliente"
                                          class="w-1/2 flex flex-col justify-center">
                                         <span>
@@ -163,17 +180,19 @@ const beforeDropdownProductsHide = () => {
                                 />
                                 <ul v-if="form.produtos.length > 0"
                                     class="w-full block list-style-none border rounded px-2">
+
                                     <template :key="produto.id" v-for="produto of form.produtos">
                                         <li class=" w-full flex flex-row items-center">
                                             <span class="text-md w-1/4">{{ produto.nome }}</span>
                                             <div class="w-1/4 ">
                                                 <InputLabel value="Quantidade"/>
-                                                <TextInput v-model="produto.qtde"
-                                                           type="number"
-                                                           default-value="1"
-                                                           required
-                                                           min="1"
-                                                           step="1"/>
+                                                <TextInput
+                                                    v-model="produto.qtde"
+                                                    type="number"
+                                                    default-value="1"
+                                                    required
+                                                    min="1"
+                                                    step="1"/>
                                             </div>
                                             <div class="w-1/4">
                                                 <InputLabel value="Valor"/>
@@ -194,6 +213,8 @@ const beforeDropdownProductsHide = () => {
                                             </div>
                                         </li>
                                     </template>
+                                    <InputError :message="form.errors.produtos"/>
+                                    <InputError :message="form.errors.total"/>
                                     <span class="font-medium">Total: R$ {{ form.total }}</span>
                                 </ul>
                             </div>
@@ -201,28 +222,91 @@ const beforeDropdownProductsHide = () => {
                                 <Modal :closeable="true"
                                        @close="showModal=  false"
                                        :show="showModal">
-                                    <div class="max-w-8xl mx-auto sm:px-6 lg:px-8">
+                                    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                                         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg px-4 py-2">
-                                            <div class="w-full">
-                                                <InputLabel value="Quantidade de Parcelas"/>
-                                                <TextInput v-model="qtdeParcelas"
-                                                           type="number"
-                                                           required
-                                                           min="1" step="1"/>
+                                            <div class="mb-5">
+                                                <h2>Definir as parcelas e condidções de pagamento</h2>
+                                                <span>Valor restante: R$ {{ valor_restante }}</span>
+                                                <InputError v-if="valor_restante < 0" message="Somatória das parcelas maior que o total do pedido" />
                                             </div>
+                                            <form @submit.prevent="appendParcela">
+                                                <div class="flex flex-row gap-4">
+                                                    <div class="w-1/4">
+                                                        <InputLabel value="Valor da Parcela"/>
+                                                        <TextInput
+                                                            class=" w-full"
+                                                            v-model="parcela.valor"
+                                                            min="0.01"
+                                                            required
+                                                            step="0.01"
+                                                            type="number"/>
+                                                    </div>
+                                                    <div class="w-1/2 px-2">
+                                                        <InputLabel value="Forma de Pagamento"/>
+                                                        <Dropdown
+                                                            class="w-full border-gray-400 border-2"
+                                                            required
+                                                            :options="forma_pagamento"
+                                                            option-label="nome"
+                                                            option-value="id"
+                                                            v-model="parcela.meio_pagamento"
+                                                        />
+                                                        <InputError v-if="parcela.meio_pagamento === 0" message="Precisa de um meio de pagamento" />
+                                                    </div>
+                                                    <div class="w-1/4">
+                                                        <InputLabel value="Vencimento"/>
+                                                        <TextInput required
+                                                                   class=" w-full"
+                                                                   v-model="parcela.vencimento"
+                                                                   type="date"></TextInput>
+                                                    </div>
+                                                </div>
+                                                <PrimaryButton
+                                                    :disabled="valor_restante <= 0 || parcela.meio_pagamento === 0"
+                                                    class="mb-5"
+                                                    type="submit"
+                                                >
+                                                    Acrescentar
+                                                </PrimaryButton>
+                                            </form>
                                             <ul>
-                                                <li v-for="parcela of parcelas" :key="parcela.id"
-                                                    class="w-full flex flex-row">
-                                                    <TextInput v-model="parcela.valor"
-                                                               type="number"/>
+                                                <span class="text-lg">Parcelas</span>
+                                                <li v-for="(parcela, index) of form.parcelas" :key="index"
+                                                    class="w-full flex flex-row mb-2">
+                                                    <TextInput
+                                                        v-model="parcela.valor"
+                                                        min="0.01"
+                                                        step="0.01"
+                                                        class="w-1/4"
+                                                        :max="valor_restante + parcela.valor"
+                                                        type="number"/>
                                                     <Dropdown
                                                         :options="forma_pagamento"
                                                         option-label="nome"
+                                                        class="w-1/2"
                                                         v-model="parcela.meio_pagamento"
+                                                        option-value="id"
                                                     />
+                                                    <TextInput v-model="parcela.vencimento" type="date"></TextInput>
+                                                    <div class="w-1/6 flex items-center">
+                                                        <a
 
+                                                            @click.prevent="removerParcela(index)"
+                                                            class=" w-full text-red-500 inline-block px-1 mx-1 hover:text-red-700"
+                                                            href="#"
+                                                        >
+                                                            Remover
+                                                        </a>
+                                                    </div>
                                                 </li>
                                             </ul>
+                                            <InputError :message="form.errors.parcelas"/>
+                                            <PrimaryButton
+                                                type="button"
+                                                @click.prevent="submit"
+                                                :disabled="valor_restante > 0 || form.parcelas.length <= 0 || valor_restante < 0">
+                                                Finalizar venda
+                                            </PrimaryButton>
                                         </div>
                                     </div>
                                 </Modal>
@@ -231,7 +315,7 @@ const beforeDropdownProductsHide = () => {
                                 <PrimaryButton @click.prevent="showModal = !showModal">Pagamento</PrimaryButton>
                             </div>
                         </form>
-                    </div>
+                    </form>
                 </div>
             </div>
         </div>

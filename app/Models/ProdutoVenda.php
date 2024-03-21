@@ -17,6 +17,8 @@ class ProdutoVenda extends Pivot
 
     protected $fillable = [
         'quantidade',
-        'valor_unitario'
+        'valor_unitario',
+        'produto_id',
+        'venda_id'
     ];
 }

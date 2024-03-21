@@ -3,9 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
-class StoreVendaRequest extends FormRequest
+class UpdateVendaRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -41,7 +40,6 @@ class StoreVendaRequest extends FormRequest
             'produtos.*.valor' => ['numeric', 'min:1', 'required_with:produtos.*'],
             'produtos.*.qtde' => ['numeric', 'min:1', 'required_with:produtos.*'],
             'cliente' => ['required', 'exists:clientes,id']
-
         ];
     }
 }

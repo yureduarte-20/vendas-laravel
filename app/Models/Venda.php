@@ -15,13 +15,17 @@ class Venda extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'total'
+        'total',
+        'user_id',
+        'cliente_id'
     ];
 
     public function produtos()
     {
         return $this->belongsToMany(Produto::class)
-            ->using(ProdutoVenda::class)->withTimestamps();
+            ->using(ProdutoVenda::class)
+            ->withPivot( 'quantidade', 'valor_unitario')
+            ->withTimestamps();
     }
     public function cliente(): BelongsTo
     {

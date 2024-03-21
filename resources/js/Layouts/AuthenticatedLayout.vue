@@ -49,6 +49,9 @@ const flash = computed(() => usePage().props.flash)
                                 <NavLink :href="route('clientes.index')" :active="route().current('clientes.index')">
                                     Clientes
                                 </NavLink>
+                                <NavLink :href="route('vendas.index')" :active="route().current('vendas.index')">
+                                   Vendas
+                                </NavLink>
 
                             </div>
                         </div>

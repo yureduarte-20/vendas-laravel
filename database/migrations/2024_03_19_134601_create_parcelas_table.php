@@ -16,7 +16,6 @@ return new class extends Migration
             $table->unsignedFloat('valor');
             $table->date('vencimento');
             $table->date('data_pagamento')->nullable();
-            $table->text('observacoes')->nullable();
 
             $table->foreignIdFor(\App\Models\FormaPagamento::class)->constrained();
             $table->foreignIdFor(\App\Models\Venda::class)->constrained()->cascadeOnDelete();

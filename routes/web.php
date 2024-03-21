@@ -47,7 +47,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/produtos/find', [\App\Http\Controllers\SearchController::class, 'find_produtos'])->name('produtos.find');
     Route::resource('produtos', \App\Http\Controllers\ProdutoController::class)->except(['show']);
     Route::resource('vendas', \App\Http\Controllers\VendaController::class)->except(['show']);
-
+    Route::get('/relatorio-vendas', \App\Http\Controllers\ReportsController::class)->name('generate.pdf');
+    Route::get('/relatorio-vendas', [\App\Http\Controllers\ReportsController::class, 'report'])->name('generate.pdf');
 });
+
 
 require __DIR__.'/auth.php';

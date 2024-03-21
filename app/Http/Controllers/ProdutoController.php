@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Produto;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
@@ -16,7 +17,11 @@ class ProdutoController extends Controller
     ];
     public function index()
     {
-        $produtos = Produto::paginate(10)->withQueryString();
+        $queryString = \Illuminate\Support\Facades\Request::query('search');
+        $produtos = Produto::
+          when($queryString, fn(Builder $query) => $query->where('nome', 'LIKE', '%'.$queryString.'%'))
+        ->paginate(10)
+            ->withQueryString();
         return Inertia::render('Produtos/index', [ 'produtos' => $produtos ]);
     }
 

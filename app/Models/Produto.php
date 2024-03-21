@@ -22,6 +22,7 @@ class Produto extends Model
     {
         return $this->belongsToMany(Venda::class)
             ->using(ProdutoVenda::class)
+            ->withPivot( 'quantidade', 'valor_unitario')
             ->withTimestamps();
     }
 }
