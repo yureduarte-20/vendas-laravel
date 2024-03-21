@@ -8,17 +8,20 @@
 </p>
 
 ## Requisitos
- - Node v20.11.0
- - PHP 8.2
- - mysql
+- Node v20.11.0
+- PHP 8.2
+- mysql
 ## Comandos iniciais
 
 ```shell
 #intalar dependencias do node com inertia 
- npm install
+npm install
 # Buildar projeto do vue3
- npm run build
- 
+npm run build
+#instalar dependencias do laravel 
+composer install
+#gerar chave de aplicacão
+php artisan key:generate
 # rodar migration
 php artisan migrate
 # rodar seeds
